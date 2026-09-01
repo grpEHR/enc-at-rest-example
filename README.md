@@ -35,6 +35,7 @@ that the whole example runs unattended.
 | Path | What it is |
 | --- | --- |
 | `justfile` | Shortcuts for all of the steps below (`just --list`) |
+| `LICENSE` | MIT |
 | `Dockerfile` | Ubuntu 24.04 + `gocryptfs`, `fuse3` and the analysis software (R + haven) |
 | `cipher/` | **The encrypted dataset.** Ciphertext plus `gocryptfs.conf` and `gocryptfs.diriv` |
 | `passphrase.txt` | The passphrase, `grpehr` |
@@ -248,3 +249,10 @@ fallback deletion of `.passfile` in case `--extpass` does not run.
 - NIST SP 800-38D: Dworkin M (2007), *Recommendation for Block Cipher Modes of
   Operation: Galois/Counter Mode (GCM) and GMAC*.
   <https://doi.org/10.6028/NIST.SP.800-38D>
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
+
+gocryptfs itself is separately licensed (MIT); see
+<https://github.com/rfjakob/gocryptfs>.
