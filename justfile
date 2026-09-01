@@ -4,7 +4,6 @@
 # Docker is the only requirement.
 
 image := "gocryptfs-example"
-dataset := "example.dta"
 
 # --privileged is needed for the container to create a FUSE mount
 run_fuse := "docker run --rm --privileged -v \"$PWD\":/work"
