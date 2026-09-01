@@ -1,0 +1,21 @@
+# Plaintext source data: never commit. Regenerate with 01-make-example-data.R
+data/
+
+# FUSE mount point: created by the scripts, empty on disk, never committed
+plain/
+
+# Passphrase file created just before job submission (see job.slurm)
+.passfile
+
+# Local scratch
+*.Rout
+.Rhistory
+
+# Generated analysis output
+results/
+
+# macOS
+.DS_Store
+
+# Singularity image built by `just sif`
+*.sif
