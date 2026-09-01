@@ -4,7 +4,7 @@ A small, self-contained, runnable example of the workflow described in
 *Encryption at Rest for Research Data on Unencrypted High Performance Computing
 Infrastructure: Implementation using gocryptfs* (Palmer, Denholm, Walker,
 Madley-Dowd and Sterne, Electronic Health Records Group, Population Health
-Sciences, Bristol Medical School, University of Bristol, 4 March 2026).
+Sciences, Bristol Medical School, University of Bristol, 1 September 2026, [DOI](https://doi.org/10.6084/m9.figshare.33320925)).
 
 [gocryptfs](https://nuetzlich.net/gocryptfs/) is an open-source encrypted
 overlay filesystem. It encrypts file contents and file names using AES-256-GCM,
