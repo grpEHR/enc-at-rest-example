@@ -83,6 +83,10 @@ submit projectdir="/projects/projectid":
     ./04-make-passfile.sh {{ projectdir }}
     sbatch job.slurm
 
+# Interactive session on Isambard: type the passphrase, get a shell with the data mounted
+interactive projectdir="/projects/projectid":
+    ./05-interactive.sh {{ projectdir }}
+
 # --- Housekeeping ------------------------------------------------------------
 
 # Remove generated results, the mount point and the plaintext dataset

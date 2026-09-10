@@ -1,37 +1,23 @@
-#!/usr/bin/bash
-#
-# Phase 3 of the report on Isambard: access the encrypted data inside a Slurm
-# compute job using a Singularity container.
-#
-# Before submitting, create the passphrase file (see 04-make-passfile.sh):
-#
-#     ./04-make-passfile.sh
-#     sbatch job.slurm
-#
-# Amend the SBATCH settings, the account, and the paths as appropriate.
-
+#!/bin/bash
 #SBATCH --job-name=analysis
 #SBATCH --time=04:00:00
 #SBATCH --nodes=1
-#SBATCH --mem=16GB
+#SBATCH --mem=16G
+set -euo pipefail
+ulimit -c 0                        # no core dumps of process memory
+cd /projects/PROJECT
+trap 'rm -f .passfile' EXIT        # fallback removal of passphrase
+mkdir -p plain results
 
-cd /projects/projectid
-
-# Create mount point
-mkdir -p /projects/projectid/plain
-# It is assumed that /projects/projectid/cipher exists and is populated from the
-# file transfer (see 'Secure transfer' in the README)
-
-# Mount, analyse, and unmount in a single container session
-# (FUSE mount only persists within the container process)
-singularity exec --fakeroot --bind "$PWD":"$PWD" gocryptfs-example.sif \
-    bash -c '
-        gocryptfs \
-            --extpass "cat $PWD/.passfile && rm -f $PWD/.passfile" \
-            "$PWD/cipher" "$PWD/plain"
-        Rscript "$PWD/analysis.R" "$PWD/plain/example.dta" "$PWD/results"
-        fusermount -u "$PWD/plain"
-    '
-
-# Fallback: ensure passphrase file is deleted
-[ -f "$PWD/.passfile" ] && rm -f "$PWD/.passfile"
+singularity exec --fakeroot --bind "$PWD" analysis.sif \
+  bash -c '
+    set -euo pipefail
+    exec 3< .passfile              # open the passphrase file ...
+    rm -f .passfile                # ... and remove it before use
+    gocryptfs -passfile /dev/fd/3 cipher plain
+    exec 3<&-
+    trap "rm -rf plain/tmp; fusermount -u plain" EXIT
+    mkdir -p plain/tmp             # temporary files encrypted too
+    export TMPDIR="$PWD/plain/tmp" STATATMP="$PWD/plain/tmp"
+    Rscript analysis.R plain/dataset.dta results
+  '

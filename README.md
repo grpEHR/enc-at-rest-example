@@ -44,6 +44,7 @@ that the whole example runs unattended.
 | `02-encrypt.sh` | Phase 1: initialises `cipher/` and encrypts the dataset into it |
 | `03-mount-and-analyse.sh` | Phase 3, locally with Docker: mount, analyse, unmount |
 | `04-make-passfile.sh` | Pre-submission step for a Slurm job: writes the mode-600 `.passfile` |
+| `05-interactive.sh` | Phase 3 on Isambard, interactively: no passphrase file needed |
 | `job.slurm` | Phase 3 on Isambard: Singularity + Slurm batch script |
 | `analysis.R` | The analysis, run against the mounted plaintext view |
 
@@ -136,6 +137,7 @@ Every step has a recipe; `just` on its own lists them.
 | `just data` | Generate the synthetic plaintext dataset |
 | `just encrypt` | Generate the dataset and encrypt it into `cipher/` |
 | `just reencrypt` | Discard `cipher/` and encrypt from scratch |
+| `just interactive [projectdir]` | Interactive Slurm session with the data mounted; exit to unmount. |
 | `just sif` | Convert the image to Singularity format for Isambard |
 | `just transfer <host>` | `scp -r cipher/` to the HPC facility |
 | `just submit [projectdir]` | Write the passphrase file and `sbatch job.slurm` |
