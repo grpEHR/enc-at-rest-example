@@ -17,5 +17,7 @@ results/
 # macOS
 .DS_Store
 
-# Singularity image built by `just sif`
+# Apptainer/Singularity image and build scratch, built by `just build`
 *.sif
+.apptainer-tmp/
+.apptainer-cache/

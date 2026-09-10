@@ -5,6 +5,9 @@
 # a CRLF shebang line makes bash fail with "bad interpreter"
 *.sh       text eol=lf
 job.slurm  text eol=lf
+Makefile   text eol=lf
+justfile   text eol=lf
+*.def      text eol=lf
 
 # Encrypted data must round-trip byte-exactly: never apply LF normalization
 cipher/** binary

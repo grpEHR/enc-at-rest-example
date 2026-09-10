@@ -1,23 +1,23 @@
 # Encryption at rest with gocryptfs — worked example
 #
-# Run `just` to list the recipes. Everything runs inside the container, so
-# Docker is the only requirement.
+# Run `just` to list the recipes. Every recipe is a one-line wrapper around a
+# numbered script, and each script picks the container runtime that is present:
+# Docker on a laptop, Apptainer/Singularity on an HPC facility such as
+# Isambard. Nothing here needs `just` itself — see the Makefile, or run the
+# scripts directly.
 
 image := "gocryptfs-example"
-
-# --privileged is needed for the container to create a FUSE mount
-run_fuse := "docker run --rm --privileged -v \"$PWD\":/work"
 
 # List the available recipes
 default:
     @just --list --unsorted
 
-# Build the container image (gocryptfs + fuse3 + R + haven)
+# Build the container image — Docker image, or .sif under Apptainer
 build:
-    docker build -t {{ image }} .
+    ./00-build.sh
 
 # Decrypt the committed cipher/ and run the analysis — the main example
-analyse: _require-cipher
+analyse:
     ./03-mount-and-analyse.sh
 alias analyze := analyse
 
@@ -42,37 +42,22 @@ reencrypt:
 # --- Looking at what is actually on disk -------------------------------------
 
 # Show that cipher/ holds only ciphertext with encrypted file names
-inspect: _require-cipher
-    @echo "cipher/ on disk — file names and contents are both encrypted:"
-    @ls -la cipher/
-    @echo
-    @file cipher/*
-    @echo
-    @echo "First bytes of the encrypted dataset:"
-    @for f in cipher/*; do \
-        case "${f##*/}" in gocryptfs.*) continue ;; esac; \
-        head -c 64 "$f" | od -c | head -4; \
-    done
+inspect:
+    ./06-inspect.sh
 
 # Open a shell inside the mounted plaintext view (exit to destroy the mount)
-explore: _require-cipher
-    mkdir -p plain
-    {{ run_fuse }} -it {{ image }} bash -c '\
-        gocryptfs -passfile /work/passphrase.txt /work/cipher /work/plain; \
-        echo; echo "Decrypted view at /work/plain — exit to destroy the mount."; echo; \
-        cd /work/plain && bash; \
-        fusermount -u /work/plain'
+explore:
+    ./07-explore.sh
 
 # Try to mount with a passphrase you type yourself (anything but 'grpehr' fails)
-wrong-passphrase: _require-cipher
-    mkdir -p plain
-    -{{ run_fuse }} -it {{ image }} gocryptfs /work/cipher /work/plain
+wrong-passphrase:
+    ./08-wrong-passphrase.sh
 
 # --- HPC (Isambard) ----------------------------------------------------------
 
-# Convert the Docker image to a Singularity image for Isambard
+# Build the Apptainer image explicitly — same as `just build` on Isambard
 sif:
-    singularity build --fakeroot {{ image }}.sif docker://{{ image }}
+    RUNTIME=apptainer ./00-build.sh
 
 # Copy the encrypted directory to the HPC facility, e.g. `just transfer PROJECT.FACILITY.isambard`
 transfer host: _require-cipher
@@ -93,9 +78,9 @@ interactive projectdir="/projects/projectid":
 clean:
     rm -rf results plain data
 
-# Remove everything generated, including cipher/ and the container image
+# Remove everything generated, including cipher/ and the images
 clean-all: clean
-    rm -rf cipher {{ image }}.sif
+    rm -rf cipher {{ image }}.sif .apptainer-tmp .apptainer-cache
     -docker image rm {{ image }}
 
 _require-cipher:

@@ -12,10 +12,8 @@
 
 set -euo pipefail
 
-IMAGE=gocryptfs-example
-
 cd "$(dirname "$0")"
+. ./container.sh
 
-# --user keeps data/example.dta owned by you rather than by root
-docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/work "$IMAGE" \
-    Rscript /work/01-make-example-data.R
+# --as-user keeps data/example.dta owned by you rather than by root
+run_container --as-user -- Rscript 01-make-example-data.R

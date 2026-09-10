@@ -1,0 +1,28 @@
+# Apptainer/Singularity definition file — the equivalent of the Dockerfile, for
+# HPC facilities such as Isambard where Docker is unavailable.
+#
+# Keep this in sync with the Dockerfile: the two must install the same software.
+# Software only: this image must never contain data.
+#
+# Build it with 00-build.sh, or directly:
+#
+#   apptainer build --fakeroot gocryptfs-example.sif gocryptfs-example.def
+#
+# Isambard nodes are Arm 64 (aarch64), so the image must be built there or on
+# another aarch64 machine. A .sif built on an x86_64 host will not run.
+
+Bootstrap: docker
+From: ubuntu:24.04
+
+%post
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        gocryptfs fuse3 r-base-core r-cran-haven
+    rm -rf /var/lib/apt/lists/*
+
+%labels
+    Description gocryptfs + fuse3 + R + haven, for the encryption-at-rest example
+
+%help
+    Software for the gocryptfs encryption-at-rest worked example: gocryptfs,
+    fuse3, R and haven. Contains no data. See the repository README.

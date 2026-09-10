@@ -15,11 +15,20 @@ set -euo pipefail
 
 PROJECTDIR=${1:-/projects/projectid}
 
+# Pick up RUNTIME/SIF detection, but from the script's own directory
+. "$(dirname "$0")/container.sh"
+
+if [ "$RUNTIME" = docker ]; then
+    echo "This script is for an HPC facility with Apptainer/Singularity." >&2
+    echo "On a laptop with Docker, use ./03-mount-and-analyse.sh instead." >&2
+    exit 1
+fi
+
 cd "$PROJECTDIR"
 mkdir -p plain
 
 srun --time=01:00:00 --pty \
-  singularity exec --fakeroot --bind "$PWD" gocryptfs-example.sif bash -c '
+  "$RUNTIME" exec --fakeroot --bind "$PWD" "$SIF" bash -c '
     set -euo pipefail
     ulimit -c 0                      # no core dumps of process memory
     gocryptfs cipher plain           # prompts for the passphrase
