@@ -31,8 +31,8 @@ srun --time=01:00:00 --pty \
   "$RUNTIME" exec --fakeroot --bind "$PWD" "$SIF" bash -c '
     set -euo pipefail
     ulimit -c 0                      # no core dumps of process memory
-    gocryptfs cipher plain           # prompts for the passphrase
-    trap "rm -rf plain/tmp; fusermount -u plain" EXIT
+    gocryptfs -nosyslog cipher plain # prompts for the passphrase
+    trap "rm -rf plain/tmp; fusermount -u plain 2>/dev/null || true" EXIT
     mkdir -p plain/tmp               # temporary files encrypted too
     export TMPDIR="$PWD/plain/tmp" STATATMP="$PWD/plain/tmp"
     echo "Decrypted view at $PWD/plain - exit to unmount."

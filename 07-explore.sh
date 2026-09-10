@@ -17,8 +17,8 @@ mkdir -p plain
 
 run_container --fuse --tty -- bash -c '
     set -e
-    gocryptfs -passfile passphrase.txt cipher plain
-    trap "fusermount -u plain" EXIT
+    gocryptfs -nosyslog -passfile passphrase.txt cipher plain
+    trap "fusermount -u plain 2>/dev/null || true" EXIT
     echo
     echo "Decrypted view at $PWD/plain - exit to destroy the mount."
     echo

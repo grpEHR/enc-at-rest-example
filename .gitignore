@@ -21,3 +21,6 @@ results/
 *.sif
 .apptainer-tmp/
 .apptainer-cache/
+
+# Docker image tarball for transfer to HPC (docker save)
+*.tar

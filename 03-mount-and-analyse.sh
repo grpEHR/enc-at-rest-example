@@ -26,8 +26,14 @@ mkdir -p plain
 # Mount, analyse, and unmount in a single container session
 run_container --fuse -- bash -c "
     set -e
-    gocryptfs -passfile passphrase.txt cipher plain
-    trap 'fusermount -u plain' EXIT
+    # -nosyslog: there is no syslog socket in the container, and without it
+    # gocryptfs prints a delivery error for every message it tries to send
+    gocryptfs -nosyslog -passfile passphrase.txt cipher plain
+    # Under Apptainer the container root filesystem is read-only, so fusermount
+    # cannot write its lock file and the unmount fails. That is harmless: the
+    # mount lives in this container's mount namespace, so it is destroyed when
+    # the container exits either way. Under Docker the unmount succeeds.
+    trap 'fusermount -u plain 2>/dev/null || true' EXIT
     Rscript analysis.R plain/$DATASET results
 "
 

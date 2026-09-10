@@ -36,6 +36,16 @@ elif ! command -v "$RUNTIME" >/dev/null 2>&1; then
     exit 1
 fi
 
+# Apptainer passes the host environment straight through, and the image has no
+# locales installed, so R warns about every LC_* it cannot set. These variables
+# are honoured by every Apptainer/Singularity version, unlike the --env flag.
+# Exported here rather than inside run_container so that scripts calling the
+# runtime directly, such as 05-interactive.sh, get them too.
+if [ "$RUNTIME" != docker ]; then
+    export APPTAINERENV_LC_ALL=C APPTAINERENV_LANG=C
+    export SINGULARITYENV_LC_ALL=C SINGULARITYENV_LANG=C
+fi
+
 # run_container [--fuse] [--tty] [--as-user] -- COMMAND [ARG...]
 #
 #   --fuse     the command creates a FUSE mount (Docker: --privileged,
@@ -59,7 +69,7 @@ run_container() {
     done
 
     if [ "$RUNTIME" = docker ]; then
-        local args=(run --rm -v "$PWD":/work)
+        local args=(run --rm -v "$PWD":/work -e LC_ALL=C -e LANG=C)
         [ -n "$fuse" ]    && args+=(--privileged)
         [ -n "$tty" ]     && args+=(-it)
         [ -n "$as_user" ] && args+=(--user "$(id -u):$(id -g)")

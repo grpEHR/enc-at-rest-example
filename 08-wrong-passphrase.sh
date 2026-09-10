@@ -19,7 +19,7 @@ require_cipher
 
 mkdir -p plain
 
-if run_container --fuse --tty -- gocryptfs cipher plain; then
+if run_container --fuse --tty -- gocryptfs -nosyslog cipher plain; then
     echo
     echo "That was the right passphrase."
 else

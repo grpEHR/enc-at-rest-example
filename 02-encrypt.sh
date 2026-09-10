@@ -28,7 +28,7 @@ run_container --tty -- gocryptfs -init cipher
 # Mount, copy the data in, list the decrypted view, unmount
 run_container --fuse --tty -- bash -c "
     set -e
-    gocryptfs cipher plain
+    gocryptfs -nosyslog cipher plain
     cp '$DATASET' plain/
     ls -la plain/
     fusermount -u plain
