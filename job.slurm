@@ -4,11 +4,14 @@
 #SBATCH --nodes=1
 #SBATCH --mem=16G
 #
-# Phase 3 on Isambard, as a batch job. Edit PROJECTDIR to your project
-# directory, then:
+# Phase 3 on Isambard, as a batch job. Run both of these from the project
+# directory -- the one holding cipher/, analysis.R and the .sif:
 #
-#   ./04-make-passfile.sh /projects/PROJECT   # prompts, writes .passfile
+#   ./04-make-passfile.sh    # prompts, writes .passfile
 #   sbatch job.slurm
+#
+# Slurm starts the job in the directory sbatch was invoked from, so there is
+# nothing to configure in this file.
 #
 # Mount, analyse and unmount all happen inside a SINGLE container invocation:
 # the FUSE mount exists only within that container's process namespace, so if
@@ -18,7 +21,6 @@
 set -euo pipefail
 ulimit -c 0                        # no core dumps of process memory
 
-PROJECTDIR=/projects/PROJECT
 SIF=gocryptfs-example.sif
 DATASET=example.dta
 
@@ -29,7 +31,10 @@ RUNTIME=$(command -v apptainer >/dev/null && echo apptainer || echo singularity)
 export APPTAINERENV_LC_ALL=C APPTAINERENV_LANG=C
 export SINGULARITYENV_LC_ALL=C SINGULARITYENV_LANG=C
 
-cd "$PROJECTDIR"
+for f in "$SIF" cipher/gocryptfs.conf .passfile; do
+    [ -e "$f" ] || { echo "$PWD/$f not found - submit from the project directory" >&2; exit 1; }
+done
+
 trap 'rm -f .passfile' EXIT        # fallback removal of passphrase
 mkdir -p plain results
 

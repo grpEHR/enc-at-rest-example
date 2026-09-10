@@ -5,12 +5,12 @@
 # recipe here is a one-line wrapper around a numbered script. Use whichever is
 # available; they do the same things.
 #
-#   make demo                              build the image and run the analysis
-#   make interactive PROJECTDIR=/projects/PROJECT
+#   make demo     build the image and run the analysis
+#   make help     list the targets
 #
 # Neither runner is required: the numbered scripts can always be run directly.
 
-PROJECTDIR ?= /projects/projectid
+PROJECTDIR ?= .
 HOST       ?=
 IMAGE      := gocryptfs-example
 

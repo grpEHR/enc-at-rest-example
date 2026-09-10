@@ -154,10 +154,10 @@ Both are wrappers around the numbered scripts, which can always be run directly.
 | `just data` | `make data` | Generate the synthetic plaintext dataset |
 | `just encrypt` | `make encrypt` | Generate the dataset and encrypt it into `cipher/` |
 | `just reencrypt` | `make reencrypt` | Discard `cipher/` and encrypt from scratch |
-| `just interactive [projectdir]` | `make interactive PROJECTDIR=...` | Interactive Slurm session with the data mounted; exit to unmount |
+| `just interactive` | `make interactive` | Interactive Slurm session with the data mounted; exit to unmount |
 | `just sif` | `make sif` | Build the Apptainer image explicitly |
 | `just transfer <host>` | `make transfer HOST=...` | `scp -r cipher/` to the HPC facility |
-| `just submit [projectdir]` | `make submit PROJECTDIR=...` | Write the passphrase file and `sbatch job.slurm` |
+| `just submit` | `make submit` | Write the passphrase file and `sbatch job.slurm` |
 | `just clean` | `make clean` | Remove `results/`, `plain/` and `data/` |
 | `just clean-all` | `make clean-all` | Also remove `cipher/`, the `.sif` and the image |
 
@@ -270,7 +270,7 @@ docker-archive://image.tar` also works.
 Interactively, which is the simplest way to check everything works:
 
 ```sh
-./05-interactive.sh /projects/PROJECT     # or: make interactive PROJECTDIR=/projects/PROJECT
+./05-interactive.sh          # or: just interactive / make interactive
 ```
 
 That starts an interactive Slurm session, prompts for the passphrase at the
@@ -283,9 +283,14 @@ descriptor and deletes before use, so it exists on disk only between submission
 and mount:
 
 ```sh
-./04-make-passfile.sh /projects/PROJECT   # prompts, writes .passfile
-sbatch job.slurm                          # edit PROJECTDIR in it first
+./04-make-passfile.sh        # prompts, writes .passfile
+sbatch job.slurm
 ```
+
+Run both from the project directory — the one holding `cipher/`, `analysis.R`
+and the `.sif`. Slurm starts the job in the directory `sbatch` was invoked
+from, so there is nothing to configure in `job.slurm`; it checks that the three
+files it needs are present and exits with a clear message if not.
 
 [`job.slurm`](job.slurm) mounts, analyses and unmounts inside a **single**
 `apptainer exec` call. This matters: the FUSE mount exists only within the

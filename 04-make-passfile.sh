@@ -6,15 +6,16 @@
 #
 # umask 077: the file is never readable by anyone else, even briefly.
 #
+# Defaults to the current directory, which is also where sbatch will start the
+# job, so normally you run this and `sbatch job.slurm` from the same place.
+#
 # Usage:  ./04-make-passfile.sh [projectdir]
 
 set -euo pipefail
 
-PROJECTDIR=${1:-/projects/projectid}
-
-cd "$PROJECTDIR"
+cd "${1:-.}"
 read -r -s -p 'gocryptfs passphrase: ' PASS; echo
 ( umask 077; printf '%s\n' "$PASS" > .passfile )
 unset PASS
 
-echo "Wrote $PROJECTDIR/.passfile (mode 600). Submit the job now: sbatch job.slurm"
+echo "Wrote $PWD/.passfile (mode 600). Submit the job now: sbatch job.slurm"

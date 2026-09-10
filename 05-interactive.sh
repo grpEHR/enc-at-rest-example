@@ -7,13 +7,15 @@
 # terminal (so no passphrase file is ever written), mounts cipher/ at plain/
 # and opens a shell inside the container. Exiting the shell unmounts the data.
 #
+# Runs in the current directory unless one is given.
+#
 # Usage:  ./05-interactive.sh [projectdir]
 #
 # Inside the shell, e.g.:  Rscript analysis.R plain/example.dta results
 
 set -euo pipefail
 
-PROJECTDIR=${1:-/projects/projectid}
+PROJECTDIR=${1:-.}
 
 # Pick up RUNTIME/SIF detection, but from the script's own directory
 . "$(dirname "$0")/container.sh"

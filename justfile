@@ -63,13 +63,13 @@ sif:
 transfer host: _require-cipher
     scp -r cipher/ {{ host }}:
 
-# Create the mode-600 passphrase file, then submit the Slurm job
-submit projectdir="/projects/projectid":
+# Create the mode-600 passphrase file, then submit the Slurm job (run from the project directory)
+submit projectdir=".":
     ./04-make-passfile.sh {{ projectdir }}
     sbatch job.slurm
 
 # Interactive session on Isambard: type the passphrase, get a shell with the data mounted
-interactive projectdir="/projects/projectid":
+interactive projectdir=".":
     ./05-interactive.sh {{ projectdir }}
 
 # --- Housekeeping ------------------------------------------------------------
