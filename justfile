@@ -13,8 +13,8 @@ default:
     @just --list --unsorted
 
 # Build the container image — Docker image, or .sif under Apptainer
-build:
-    ./00-build.sh
+build ref="":
+    ./00-build.sh {{ ref }}
 
 # Decrypt the committed cipher/ and run the analysis — the main example
 analyse:
@@ -58,6 +58,14 @@ wrong-passphrase:
 # Build the Apptainer image explicitly — same as `just build` on Isambard
 sif:
     RUNTIME=apptainer ./00-build.sh
+
+# Copy the built image to the HPC facility and convert it there ($ISAMBARD_HOST, $ISAMBARD_DIR)
+transfer-image host="" dir="":
+    ./09-transfer-image.sh {{ host }} {{ dir }}
+
+# Build for amd64 + arm64 and push to a registry, e.g. `just publish myaccount/gocryptfs-example` ($DOCKERHUB_USER)
+publish ref="":
+    ./10-publish-image.sh {{ ref }}
 
 # Copy the encrypted directory to the HPC facility, e.g. `just transfer PROJECT.FACILITY.isambard`
 transfer host: _require-cipher

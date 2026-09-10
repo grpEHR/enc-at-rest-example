@@ -3,12 +3,32 @@
 # Builds the container image with whichever runtime is available: a Docker
 # image with Docker, or a .sif with Apptainer/Singularity.
 #
-# Usage:  ./00-build.sh
+# Given a registry reference, fetches that published image instead of building
+# from source. This is the quickest route on a facility where `apptainer build
+# --fakeroot` fails, because a pull needs no fakeroot at all.
+#
+# Usage:  ./00-build.sh [user/repository[:tag]]
 
 set -euo pipefail
 
 cd "$(dirname "$0")"
 . ./container.sh
+
+REF=${1:-${IMAGE_REF:-}}
+
+if [ -n "$REF" ]; then
+    if [ "$RUNTIME" = docker ]; then
+        docker pull "$REF"
+        docker tag "$REF" "$IMAGE"
+        echo
+        echo "Pulled $REF and tagged it $IMAGE."
+    else
+        "$RUNTIME" pull --force "$SIF" "docker://$REF"
+        echo
+        echo "Pulled $REF into $SIF."
+    fi
+    exit 0
+fi
 
 if [ "$RUNTIME" = docker ]; then
     docker build -t "$IMAGE" .

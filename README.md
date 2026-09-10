@@ -52,6 +52,8 @@ that the whole example runs unattended.
 | `06-inspect.sh` | Shows that `cipher/` holds only ciphertext |
 | `07-explore.sh` | Shell inside the mounted plaintext view |
 | `08-wrong-passphrase.sh` | Tries to mount with a passphrase you type yourself |
+| `09-transfer-image.sh` | Copies the image to an HPC facility as a tarball and converts it there |
+| `10-publish-image.sh` | Builds for amd64 + arm64 and pushes to a registry |
 | `job.slurm` | Phase 3 on Isambard: Apptainer + Slurm batch script |
 | `analysis.R` | The analysis, run against the mounted plaintext view |
 
@@ -156,6 +158,8 @@ Both are wrappers around the numbered scripts, which can always be run directly.
 | `just reencrypt` | `make reencrypt` | Discard `cipher/` and encrypt from scratch |
 | `just interactive` | `make interactive` | Interactive Slurm session with the data mounted; exit to unmount |
 | `just sif` | `make sif` | Build the Apptainer image explicitly |
+| `just transfer-image [host] [dir]` | `make transfer-image HOST=... PROJECTDIR=...` | Copy the image to the HPC facility and convert it there |
+| `just publish [ref]` | `make publish REF=...` | Build for amd64 + arm64 and push to a registry |
 | `just transfer <host>` | `make transfer HOST=...` | `scp -r cipher/` to the HPC facility |
 | `just submit` | `make submit` | Write the passphrase file and `sbatch job.slurm` |
 | `just clean` | `make clean` | Remove `results/`, `plain/` and `data/` |
@@ -260,10 +264,44 @@ srun --nodes=1 --pty --interactive bash
 ./00-build.sh
 ```
 
-If you would rather build once and copy the image over, an Apple Silicon Mac
-already produces `linux/arm64` images, so `docker save gocryptfs-example -o
-image.tar`, `scp` it, and `apptainer build gocryptfs-example.sif
-docker-archive://image.tar` also works.
+### If `--fakeroot` will not build the image
+
+`apptainer build --fakeroot` runs `apt` inside the container, which needs a
+working `/etc/subuid` mapping. Where that is unavailable the build fails part
+way through `dpkg --configure`. Two routes avoid it entirely, because both only
+repack layers that already exist and so need no fakeroot at all.
+
+**Copy the image over.** From the workstation that has Docker:
+
+```sh
+export ISAMBARD_HOST=b35ck.3.isambard
+export ISAMBARD_DIR=/projects/b35ck/enc-at-rest-example
+just transfer-image          # or: make transfer-image HOST=... PROJECTDIR=...
+```
+
+That runs `docker save`, copies the tarball across, converts it with `apptainer
+build docker-archive://`, and removes the tarball at both ends. It is about
+110 MB over the wire. An Apple Silicon Mac already produces `linux/arm64`
+images; on an x86_64 host, build with `docker build --platform linux/arm64`
+first.
+
+**Or publish it once and pull it.** From the workstation:
+
+```sh
+docker login
+export DOCKERHUB_USER=myaccount
+just publish                 # or: make publish REF=myaccount/gocryptfs-example
+```
+
+Then on Isambard, and on every later clone:
+
+```sh
+./00-build.sh myaccount/gocryptfs-example    # or: make build REF=...
+```
+
+`10-publish-image.sh` builds for `linux/amd64` and `linux/arm64` so the same
+tag works on both a workstation and Isambard. On an Apple Silicon Mac the
+amd64 half is emulated and takes several minutes.
 
 ### Running the analysis
 

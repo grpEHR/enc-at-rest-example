@@ -12,18 +12,21 @@
 
 PROJECTDIR ?= .
 HOST       ?=
+REF        ?=
 IMAGE      := gocryptfs-example
 
 .PHONY: help build analyse analyze demo data encrypt reencrypt inspect \
-        explore wrong-passphrase sif transfer submit interactive clean clean-all
+        explore wrong-passphrase sif transfer-image publish transfer submit \
+        interactive clean clean-all
 
 ## List the available targets
 help:
 	grep -E '^[a-z-]+:' Makefile | cut -d: -f1 | sort -u | sed 's/^/  make /'
 
 ## Build the container image (Docker image or .sif, whichever applies)
+## With REF=user/repo:tag, fetch that published image instead of building
 build:
-	./00-build.sh
+	./00-build.sh $(REF)
 
 ## Decrypt the committed cipher/ and run the analysis - the main example
 analyse:
@@ -62,6 +65,14 @@ wrong-passphrase:
 ## Build the Apptainer image explicitly (same as `make build` on HPC)
 sif:
 	RUNTIME=apptainer ./00-build.sh
+
+## Copy the built image to the HPC facility and convert it there
+transfer-image:
+	./09-transfer-image.sh $(HOST) $(PROJECTDIR)
+
+## Build for amd64 + arm64 and push to a registry: make publish REF=user/repo:tag
+publish:
+	./10-publish-image.sh $(REF)
 
 ## Copy the encrypted directory to the HPC facility: make transfer HOST=...
 transfer:
