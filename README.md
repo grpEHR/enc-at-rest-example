@@ -337,6 +337,16 @@ job or because of an error — the mount is destroyed and later container
 invocations cannot reach the decrypted data. The job script also contains a
 fallback deletion of `.passfile` in case the job fails before the mount.
 
+On Isambard's parallel filesystem the job log contains a line such as
+`InoMap: opening spillMap for {{80753272 0} 144117425938400971}`. This is
+informational, not an error: gocryptfs maps each `(device, inode)` pair on to a
+unique inode number for the FUSE mount, and spills to a secondary map when the
+underlying filesystem issues inode numbers too large for its fast path, as
+Lustre and GPFS do. The map is held in memory, so nothing extra is written to
+disk. Add `-q` to the `gocryptfs` command in [`job.slurm`](job.slurm) to
+suppress it, at the cost of also losing the `Filesystem mounted and ready`
+line.
+
 ### If you want `just` on Isambard anyway
 
 It is a single static binary and needs no root:
